@@ -15,6 +15,10 @@ import java.net.*;
 public class TestGUI extends JFrame {
     private List<JButton> homeGrid = new ArrayList<>();
     private List<JButton> awayGrid = new ArrayList<>();
+    private int myshipAmt = 1;
+    private int opponentshipAmt = 1;
+    private int fireIndex;
+    private boolean myturn = false;
 
     private JPanel gui;
     private JPanel homeGridGUI;
@@ -25,13 +29,11 @@ public class TestGUI extends JFrame {
     private JLabel status;
     private DefaultListModel shipListModel;
 
-    private Socket clientSocket = null;
-    private ObjectOutputStream out = null;
-    private ObjectInputStream in = null;
-    private ServerSocket server = null;
-
     private Home home;
     private Away away;
+    
+    private Thread serverThread;
+    private Thread clientThread;
 
 
     // TODO: keep track of game state (Place your ships, Waiting for other player's turn, Game over, etc.)
@@ -180,9 +182,12 @@ public class TestGUI extends JFrame {
                         i++;
                     }
 
-                    // Fire at the opponent:
-                    fire(index);
+                    fireIndex = index;
+                    System.out.println("Firing index: " + fireIndex);
+                    //  fire(index);
                     redraw();
+
+                    if (myturn) { myturn = false; }
                  //   waitForFire();
                 }
 
@@ -303,88 +308,112 @@ public class TestGUI extends JFrame {
         status.validate();
     }
 
+    public void gameOperations (ObjectInputStream in, ObjectOutputStream out) {
+        int index;
+        boolean hitOrMiss;
+        System.out.println("In operations");
+
+        while (myshipAmt > 0 && opponentshipAmt > 0) {
+            if (myturn) {
+                try {
+                    while (myturn) Thread.yield();
+                    out.writeInt(fireIndex);
+                    out.flush();
+                    System.out.println("Sending index: " + fireIndex);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                try {
+                    hitOrMiss = in.readBoolean();
+                    if (hitOrMiss == true) {System.out.println("Hit");away.setHit(fireIndex);}
+                    else {System.out.println("Miss");away.setMiss(fireIndex);}
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                try {
+                    index = in.readInt();
+                    System.out.println("Got index: " + index);
+                    hitOrMiss = home.checkForHit(index);
+                    out.writeBoolean(hitOrMiss);
+                    out.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                myturn = true;
+            }
+
+        }
+    }
+
+    private class waitForClientThread implements Runnable {
+        private ServerSocket server;
+
+        public waitForClientThread (ServerSocket s) {
+            super ();
+            server = s;
+            System.out.println("Server thread initiated");
+        }
+
+        public void run () {
+            ObjectInputStream in;
+            ObjectOutputStream out;
+            try {
+                System.out.println("Waiting for client");
+                Socket clientSocket = server.accept();
+                System.out.println("Client accepted");
+                in = new ObjectInputStream(clientSocket.getInputStream());
+                out = new ObjectOutputStream(clientSocket.getOutputStream());
+                gameOperations(in, out);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public void initServer () {
+        ServerSocket server;
         try {
             server = new ServerSocket(1037);
-
+            Thread thread = new Thread(new waitForClientThread(server));
+            serverThread = thread;
+            clientThread = thread;
+            thread.start();
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
         }
 
-        Socket clientSocket = null;
+    }
 
-        try {
-            System.out.println("Waiting for client");
-            clientSocket = server.accept();
-        } catch (IOException e) {
-            System.out.println("Accept failed");
-            System.exit(1);
+    public class sendToServerThread implements Runnable {
+        public void run () {
+            ObjectOutputStream out = null;
+            ObjectInputStream in = null;
+            System.out.println("Trying to send request to server");
+            try {
+                Socket clientSocket = new Socket("127.0.0.1", 1037);
+
+                in = new ObjectInputStream(clientSocket.getInputStream());
+                out = new ObjectOutputStream(clientSocket.getOutputStream());
+                // thread wont print after these two lines above
+
+                myturn = true;
+                gameOperations(in, out);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-
-        try {
-             in = new ObjectInputStream(clientSocket.getInputStream());
-             out = new ObjectOutputStream(clientSocket.getOutputStream());
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-            System.exit(1);
-        }
-
-        waitForFire();
     }
 
     public void initClient () {
         try {
-            clientSocket = new Socket("127.0.0.1", 1037);
-            out = new ObjectOutputStream(clientSocket.getOutputStream());
-            in = new ObjectInputStream(clientSocket.getInputStream());
-        } catch (UnknownHostException e) {
-            System.out.println("Unknown host");
-            System.exit(1);
-        } catch (IOException e) {
-            System.out.println("Couldn't get IO");
+            Thread thread = new Thread (new sendToServerThread());
+            clientThread = thread;
+            thread.start();
+        } catch (Exception e) {
             System.exit(1);
         }
-    }
-
-    public void waitForFire() {
-      int index;
-
-       try {
-           index = in.readInt();
-           System.out.println("Got index: " + index);
-           boolean hitOrMiss = home.checkForHit(index);
-           out.writeBoolean(hitOrMiss);
-           out.flush();
-       } catch (IOException e) {
-           e.printStackTrace();
-       }
-    }
-
-    // TODO: send (x, y) over the connection to opponent and see if we struck their ship
-    public boolean fire(int index) {
-        try {
-            out.writeInt(index);
-            out.flush();
-            System.out.println("Sending index: " + index);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        // TODO: if we hit our opponent then:
-        try {
-            boolean hitOrMiss = in.readBoolean();
-            if (hitOrMiss == true) {System.out.println("Hit");away.setHit(index);}
-            else {System.out.println("Miss");away.setMiss(index);}
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        //hits++;
-        //weWon = true;
-        //return true
-
-        // TODO: if we miss our opponent then:
-      //  misses++;
-      //  away.board.set(index, "batt102.gif");
-        return false;
     }
 
     public static void main(String args[]) {
