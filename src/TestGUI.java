@@ -184,11 +184,7 @@ public class TestGUI extends JFrame {
 
                     fireIndex = index;
                     System.out.println("Firing index: " + fireIndex);
-                    //  fire(index);
-                    redraw();
-
                     if (myturn) { myturn = false; }
-                 //   waitForFire();
                 }
 
                 @Override
@@ -328,6 +324,7 @@ public class TestGUI extends JFrame {
                     hitOrMiss = in.readBoolean();
                     if (hitOrMiss == true) {System.out.println("Hit");away.setHit(fireIndex);}
                     else {System.out.println("Miss");away.setMiss(fireIndex);}
+                    redraw();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -336,6 +333,7 @@ public class TestGUI extends JFrame {
                     index = in.readInt();
                     System.out.println("Got index: " + index);
                     hitOrMiss = home.checkForHit(index);
+                    redraw();
                     out.writeBoolean(hitOrMiss);
                     out.flush();
                 } catch (IOException e) {
@@ -363,10 +361,14 @@ public class TestGUI extends JFrame {
                 System.out.println("Waiting for client");
                 Socket clientSocket = server.accept();
                 System.out.println("Client accepted");
-                in = new ObjectInputStream(clientSocket.getInputStream());
+
                 out = new ObjectOutputStream(clientSocket.getOutputStream());
+                in = new ObjectInputStream(clientSocket.getInputStream());
+
+                System.out.println("Got client input/output stream");
                 gameOperations(in, out);
             } catch (IOException e) {
+                System.out.println("Couldn't get I/O");
                 e.printStackTrace();
             }
         }
@@ -388,19 +390,21 @@ public class TestGUI extends JFrame {
 
     public class sendToServerThread implements Runnable {
         public void run () {
-            ObjectOutputStream out = null;
-            ObjectInputStream in = null;
+            ObjectOutputStream out;
+            ObjectInputStream in;
             System.out.println("Trying to send request to server");
             try {
                 Socket clientSocket = new Socket("127.0.0.1", 1037);
 
-                in = new ObjectInputStream(clientSocket.getInputStream());
                 out = new ObjectOutputStream(clientSocket.getOutputStream());
+                in = new ObjectInputStream(clientSocket.getInputStream());
                 // thread wont print after these two lines above
+                System.out.println("Got client input/out stream");
 
                 myturn = true;
                 gameOperations(in, out);
             } catch (IOException e) {
+                System.out.println("Couldn't get I/O");
                 e.printStackTrace();
             }
         }
