@@ -347,17 +347,17 @@ public class TestGUI extends JFrame {
     }
 
     public void waitForFire() {
-           int index;
+      int index;
 
-            try {
-                index = in.readInt();
-                System.out.println("Got index: " + index);
-                boolean hitOrMiss = home.checkForHit(index);
-                out.writeBoolean(hitOrMiss);
-                out.flush();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+       try {
+           index = in.readInt();
+           System.out.println("Got index: " + index);
+           boolean hitOrMiss = home.checkForHit(index);
+           out.writeBoolean(hitOrMiss);
+           out.flush();
+       } catch (IOException e) {
+           e.printStackTrace();
+       }
     }
 
     // TODO: send (x, y) over the connection to opponent and see if we struck their ship
