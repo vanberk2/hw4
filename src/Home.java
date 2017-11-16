@@ -120,6 +120,18 @@ public class Home {
         return false;
     }
 
+    public boolean checkForHit(int index) {
+        Tile tile = board.get(index);
+        if (tile.isShip()) {
+            if(!tile.isHit()) {
+                tile.setHit(true);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     //
     // Check if all of our ships are sunk.
     //
