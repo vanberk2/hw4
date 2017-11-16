@@ -251,7 +251,7 @@ public class TestGUI extends JFrame {
         //
         // Add menu bar to the JFrame:
         //
-        MenuBar menuBar = new MenuBar();
+        MenuBar menuBar = new MenuBar(away);
         setJMenuBar(menuBar);
         menuBar.add(startMenu);
 
