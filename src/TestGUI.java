@@ -1,10 +1,16 @@
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.net.*;
 
 public class TestGUI extends JFrame {
     private List<JButton> homeGrid = new ArrayList<>();
@@ -19,8 +25,14 @@ public class TestGUI extends JFrame {
     private JLabel status;
     private DefaultListModel shipListModel;
 
+    private Socket clientSocket = null;
+    private ObjectOutputStream out = null;
+    private ObjectInputStream in = null;
+    private ServerSocket server = null;
+
     private Home home;
     private Away away;
+
 
     // TODO: keep track of game state (Place your ships, Waiting for other player's turn, Game over, etc.)
     private String gameState = "";
@@ -39,7 +51,7 @@ public class TestGUI extends JFrame {
         //   4. Game information and status in the bottom right (# hits, # misses, ... )
         //
         gui = new JPanel(new GridLayout(2, 2));
-        gui.setBorder(BorderFactory.createEmptyBorder(2,2,2,2));
+        gui.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
         getContentPane().add(gui);
 
         //
@@ -58,10 +70,12 @@ public class TestGUI extends JFrame {
             //
             current.addMouseListener(new MouseListener() {
                 @Override
-                public void mouseClicked(MouseEvent e) { }
+                public void mouseClicked(MouseEvent e) {
+                }
 
                 @Override
-                public void mousePressed(MouseEvent e) { }
+                public void mousePressed(MouseEvent e) {
+                }
 
                 @Override
                 public void mouseReleased(MouseEvent e) {
@@ -121,10 +135,12 @@ public class TestGUI extends JFrame {
                 }
 
                 @Override
-                public void mouseEntered(MouseEvent e) { }
+                public void mouseEntered(MouseEvent e) {
+                }
 
                 @Override
-                public void mouseExited(MouseEvent e) { }
+                public void mouseExited(MouseEvent e) {
+                }
             });
             current.setBorder(new LineBorder(Color.black));
             current.setOpaque(true);
@@ -144,10 +160,12 @@ public class TestGUI extends JFrame {
             JButton current = new JButton(icon);
             current.addMouseListener(new MouseListener() {
                 @Override
-                public void mouseClicked(MouseEvent e) { }
+                public void mouseClicked(MouseEvent e) {
+                }
 
                 @Override
-                public void mousePressed(MouseEvent e) { }
+                public void mousePressed(MouseEvent e) {
+                }
 
                 @Override
                 public void mouseReleased(MouseEvent e) {
@@ -163,15 +181,18 @@ public class TestGUI extends JFrame {
                     }
 
                     // Fire at the opponent:
-                    away.fire(index);
+                    fire(index);
                     redraw();
+                 //   waitForFire();
                 }
 
                 @Override
-                public void mouseEntered(MouseEvent e) { }
+                public void mouseEntered(MouseEvent e) {
+                }
 
                 @Override
-                public void mouseExited(MouseEvent e) { }
+                public void mouseExited(MouseEvent e) {
+                }
             });
             current.setBorder(new LineBorder(Color.black));
             current.setOpaque(true);
@@ -216,10 +237,23 @@ public class TestGUI extends JFrame {
         redraw();
 
         //
+        // Add Start menu
+        //
+        JMenu startMenu = new JMenu("Start");
+        JMenuItem startServer = new JMenuItem("Start Server");
+        startServer.setMnemonic('s');
+        startServer.addActionListener(new startServrHandler());
+        startMenu.add(startServer);
+        JMenuItem startClient = new JMenuItem("Start Client");
+        startClient.setMnemonic('C');
+        startClient.addActionListener(new startClientHandler());
+        startMenu.add(startClient);
+        //
         // Add menu bar to the JFrame:
         //
         MenuBar menuBar = new MenuBar();
         setJMenuBar(menuBar);
+        menuBar.add(startMenu);
 
         // TODO: resizeable game window scales images appropriately?
         setSize(400, 440);
@@ -269,6 +303,93 @@ public class TestGUI extends JFrame {
         status.validate();
     }
 
+    public void initServer () {
+        try {
+            server = new ServerSocket(1037);
+
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+
+        Socket clientSocket = null;
+
+        try {
+            System.out.println("Waiting for client");
+            clientSocket = server.accept();
+        } catch (IOException e) {
+            System.out.println("Accept failed");
+            System.exit(1);
+        }
+
+        try {
+             in = new ObjectInputStream(clientSocket.getInputStream());
+             out = new ObjectOutputStream(clientSocket.getOutputStream());
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+            System.exit(1);
+        }
+
+        waitForFire();
+    }
+
+    public void initClient () {
+        try {
+            clientSocket = new Socket("127.0.0.1", 1037);
+            out = new ObjectOutputStream(clientSocket.getOutputStream());
+            in = new ObjectInputStream(clientSocket.getInputStream());
+        } catch (UnknownHostException e) {
+            System.out.println("Unknown host");
+            System.exit(1);
+        } catch (IOException e) {
+            System.out.println("Couldn't get IO");
+            System.exit(1);
+        }
+    }
+
+    public void waitForFire() {
+           int index;
+
+            try {
+                while (true) {
+                    index = in.readInt();
+                    System.out.println("Got index: " + index);
+                    boolean hitOrMiss = home.checkForHit(index);
+                    out.writeBoolean(hitOrMiss);
+                    out.flush();
+                    break;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+    }
+
+    // TODO: send (x, y) over the connection to opponent and see if we struck their ship
+    public boolean fire(int index) {
+        try {
+            out.writeInt(index);
+            out.flush();
+            System.out.println("Sending index: " + index);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // TODO: if we hit our opponent then:
+        try {
+            boolean hitOrMiss = in.readBoolean();
+            if (hitOrMiss == true) {System.out.println("Hit");away.setHit(index);}
+            else {System.out.println("Miss");away.setMiss(index);}
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        //hits++;
+        //weWon = true;
+        //return true
+
+        // TODO: if we miss our opponent then:
+      //  misses++;
+      //  away.board.set(index, "batt102.gif");
+        return false;
+    }
+
     public static void main(String args[]) {
         // Create and place ships
         Home home = new Home();
@@ -278,4 +399,18 @@ public class TestGUI extends JFrame {
         TestGUI testGUI = new TestGUI(home, away);
         testGUI.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
     }
+
+    private class startClientHandler implements ActionListener {
+        public void actionPerformed(ActionEvent ev) {
+            initClient();
+        }
+    }
+
+    private class startServrHandler implements ActionListener {
+        public void actionPerformed(ActionEvent ev) {
+            initServer();
+        }
+    }
 }
+
+
