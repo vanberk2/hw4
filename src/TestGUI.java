@@ -350,14 +350,11 @@ public class TestGUI extends JFrame {
            int index;
 
             try {
-                while (true) {
-                    index = in.readInt();
-                    System.out.println("Got index: " + index);
-                    boolean hitOrMiss = home.checkForHit(index);
-                    out.writeBoolean(hitOrMiss);
-                    out.flush();
-                    break;
-                }
+                index = in.readInt();
+                System.out.println("Got index: " + index);
+                boolean hitOrMiss = home.checkForHit(index);
+                out.writeBoolean(hitOrMiss);
+                out.flush();
             } catch (IOException e) {
                 e.printStackTrace();
             }
