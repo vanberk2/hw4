@@ -18,8 +18,12 @@ public class TestGUI extends JFrame {
     private int myshipAmt = 1;
     private int opponentshipAmt = 1;
     private int fireIndex;
+    private int firedHits = 0;
     private boolean myturn = false;
+    private boolean gameInProgress = false;
 
+    private String ip = "127.0.0.1";
+    private String port = "1037";
     private JPanel gui;
     private JPanel homeGridGUI;
     private JPanel awayGridGUI;
@@ -296,9 +300,16 @@ public class TestGUI extends JFrame {
         //
         // Redraw game status information:
         //
+        gameState = "Initiate server or connect to server";
+        redrawStatus();
+    }
+
+    public void redrawStatus () {
         status.setText("<html> Game state: " + gameState
                 + "<br>Hits: " + away.getHits()
-                + "<br>Misses: " + away.getMisses() + "</html>"
+                + "<br>Misses: " + away.getMisses()
+                + "<br>Ships: " + home.getShipAmt()
+                + "<br>Enemy ship hits: " + firedHits + "</html>"
         );
         status.repaint();
         status.validate();
@@ -309,10 +320,22 @@ public class TestGUI extends JFrame {
         boolean hitOrMiss;
         System.out.println("In operations");
 
-        while (myshipAmt > 0 && opponentshipAmt > 0) {
+        while (firedHits < 17) {
+            if (home.getShipAmt() != 5) {
+                gameState = "Waiting for your ship placement";
+                redrawStatus();
+                while (home.getShipAmt() != 5) {
+                    Thread.yield();
+                }
+            }
+
             if (myturn) {
                 try {
-                    while (myturn) Thread.yield();
+                    gameState = "Waiting for your shot";
+                    redrawStatus();
+                    while (myturn) {
+                        Thread.yield();
+                    }
                     out.writeInt(fireIndex);
                     out.flush();
                     System.out.println("Sending index: " + fireIndex);
@@ -322,7 +345,7 @@ public class TestGUI extends JFrame {
 
                 try {
                     hitOrMiss = in.readBoolean();
-                    if (hitOrMiss == true) {System.out.println("Hit");away.setHit(fireIndex);}
+                    if (hitOrMiss == true) {System.out.println("Hit");away.setHit(fireIndex); firedHits++;}
                     else {System.out.println("Miss");away.setMiss(fireIndex);}
                     redraw();
                 } catch (IOException e) {
@@ -330,6 +353,8 @@ public class TestGUI extends JFrame {
                 }
             } else {
                 try {
+                    gameState = "Waiting for opponent's shot";
+                    redrawStatus();
                     index = in.readInt();
                     System.out.println("Got index: " + index);
                     hitOrMiss = home.checkForHit(index);
@@ -343,6 +368,8 @@ public class TestGUI extends JFrame {
             }
 
         }
+
+        System.out.println("You've won!");
     }
 
     private class waitForClientThread implements Runnable {
@@ -357,27 +384,35 @@ public class TestGUI extends JFrame {
         public void run () {
             ObjectInputStream in;
             ObjectOutputStream out;
-            try {
-                System.out.println("Waiting for client");
-                Socket clientSocket = server.accept();
-                System.out.println("Client accepted");
+            if (!gameInProgress) {
+                try {
+                    gameState = "Waiting for client";
+                    redrawStatus();
 
-                out = new ObjectOutputStream(clientSocket.getOutputStream());
-                in = new ObjectInputStream(clientSocket.getInputStream());
+                    System.out.println("Waiting for client");
+                    Socket clientSocket = server.accept();
+                    System.out.println("Client accepted");
 
-                System.out.println("Got client input/output stream");
-                gameOperations(in, out);
-            } catch (IOException e) {
-                System.out.println("Couldn't get I/O");
-                e.printStackTrace();
+                    out = new ObjectOutputStream(clientSocket.getOutputStream());
+                    in = new ObjectInputStream(clientSocket.getInputStream());
+
+                    gameInProgress = true;
+                    System.out.println("Got client input/output stream");
+                    gameOperations(in, out);
+                } catch (IOException e) {
+                    System.out.println("Couldn't get I/O");
+                    e.printStackTrace();
+                }
             }
         }
     }
 
     public void initServer () {
         ServerSocket server;
+        String serverport = JOptionPane.showInputDialog("Port: ");
+        port = serverport;
         try {
-            server = new ServerSocket(1037);
+            server = new ServerSocket(Integer.parseInt(port));
             Thread thread = new Thread(new waitForClientThread(server));
             serverThread = thread;
             clientThread = thread;
@@ -393,19 +428,23 @@ public class TestGUI extends JFrame {
             ObjectOutputStream out;
             ObjectInputStream in;
             System.out.println("Trying to send request to server");
-            try {
-                Socket clientSocket = new Socket("127.0.0.1", 1037);
+            if (!gameInProgress) {
+                String serverip = JOptionPane.showInputDialog("IP: ");
+                ip = serverip;
+                String clientport = JOptionPane.showInputDialog("Port: ");
+                try {
+                    Socket clientSocket = new Socket(serverip, Integer.parseInt(clientport));
 
-                out = new ObjectOutputStream(clientSocket.getOutputStream());
-                in = new ObjectInputStream(clientSocket.getInputStream());
-                // thread wont print after these two lines above
-                System.out.println("Got client input/out stream");
-
-                myturn = true;
-                gameOperations(in, out);
-            } catch (IOException e) {
-                System.out.println("Couldn't get I/O");
-                e.printStackTrace();
+                    out = new ObjectOutputStream(clientSocket.getOutputStream());
+                    in = new ObjectInputStream(clientSocket.getInputStream());
+                    System.out.println("Got client input/out stream");
+                    gameInProgress = true;
+                    myturn = true;
+                    gameOperations(in, out);
+                } catch (IOException e) {
+                    System.out.println("Couldn't get I/O");
+                    e.printStackTrace();
+                }
             }
         }
     }
