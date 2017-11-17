@@ -39,8 +39,6 @@ public class TestGUI extends JFrame {
     private Thread serverThread;
     private Thread clientThread;
 
-
-    // TODO: keep track of game state (Place your ships, Waiting for other player's turn, Game over, etc.)
     private String gameState = "";
 
     public TestGUI(Home home, Away away) {
@@ -128,11 +126,10 @@ public class TestGUI extends JFrame {
                             // Remove the ship type from the list (we do this because the user is only allowed to place
                             // one of each ship type)
                             shipListModel.remove(j);
+                            shipList.setSelectedIndex(0);
 
                             if (shipListModel.isEmpty()) {
                                 // All ships have been placed
-                                // TODO: Send opponent notice that we're done placing ships
-                                // TODO: Do not allow any more ship placement
                             }
                         }
 
@@ -263,6 +260,7 @@ public class TestGUI extends JFrame {
 
         // TODO: resizeable game window scales images appropriately?
         setSize(400, 440);
+        setResizable(false);
         setVisible(true);
     }
 
@@ -361,7 +359,6 @@ public class TestGUI extends JFrame {
                 }
                 myturn = true;
             }
-
         }
 
         System.out.println("You've won!");
@@ -452,6 +449,22 @@ public class TestGUI extends JFrame {
         } catch (Exception e) {
             System.exit(1);
         }
+    }
+
+    public void resetGame() {
+        home.reset();
+        away.reset();
+
+        firedHits = 0;
+        gameState = "";
+
+        String[] shipStrings = {"Aircraft Carrier", "Battleship", "Destroyer", "Submarine", "Patrol Boat"};
+        for (String s : shipStrings) {
+            shipListModel.addElement(s);
+        }
+        shipList.setSelectedIndex(0);
+
+        redraw();
     }
 
     public static void main(String args[]) {

@@ -4,7 +4,7 @@ import java.util.List;
 public class Home {
     public final static int BOARD_LENGTH = 10;
     public final static int BOARD_SIZE = BOARD_LENGTH * BOARD_LENGTH;
-    private int shipAmt;
+    private int shipAmt = 0;
 
     List<Tile> board = new ArrayList<>();
 
@@ -13,6 +13,15 @@ public class Home {
             Tile tile = new Tile("batt100.gif", false, false);
             board.add(tile);
         }
+    }
+
+    public void reset() {
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            Tile tile = new Tile("batt100.gif", false, false);
+            board.set(i, tile);
+        }
+
+        this.shipAmt = 0;
     }
 
     public boolean addShip(Ship ship, int row, int col) {
@@ -109,20 +118,7 @@ public class Home {
 
     //
     // This method should be called when our opponent fires at us -- we'll enter their firing coordinates here.
-    // TODO: If we've been hit, respond to the other player letting them know.
     //
-    public boolean checkForHit(int row, int col) {
-        Tile tile = board.get(row*BOARD_LENGTH + col);
-        if (tile.isShip()) {
-            if(!tile.isHit()) {
-                tile.setHit(true);
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     public boolean checkForHit(int index) {
         Tile tile = board.get(index);
         if (tile.isShip()) {

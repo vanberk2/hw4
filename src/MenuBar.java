@@ -26,6 +26,7 @@ public class MenuBar extends JMenuBar {
                         "CS342 Project 4 -  Networked Battleship\n\n" +
                         "Authors:\n" +
                         "Adam vanBerkum (vanberk2)\n" +
+                        "Sharaf Atwa (satwa3)\n" +
                         "Nathan Seitz (nseitz3)\n";
                 JOptionPane.showMessageDialog(null, msg, "About", JOptionPane.INFORMATION_MESSAGE);
             }
@@ -67,8 +68,10 @@ public class MenuBar extends JMenuBar {
         connectionItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String msg =
-                        ""; // TODO: Write Connection Help message
+                String msg = "Call up your friend you want to play with and decide which of you wants to \n" +
+                        "host the game. The host should click, Start Server under the Make A Connection \n" +
+                        "menu.  Finally, the client must click Start Client in the Make a Connection menu \n" +
+                        "and enter in the host's IP address in the dialog box.";
                 JOptionPane.showMessageDialog(null, msg, "Connection Help", JOptionPane.INFORMATION_MESSAGE);
             }
         });
