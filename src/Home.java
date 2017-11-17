@@ -4,6 +4,7 @@ import java.util.List;
 public class Home {
     public final static int BOARD_LENGTH = 10;
     public final static int BOARD_SIZE = BOARD_LENGTH * BOARD_LENGTH;
+    private int shipAmt;
 
     List<Tile> board = new ArrayList<>();
 
@@ -36,7 +37,7 @@ public class Home {
                     board.set(r*BOARD_LENGTH + col, tile);
                     r++;
                 }
-
+                shipAmt++;
                 return true;
             }
         } else if (shipOrientation.equals('S')) {
@@ -56,7 +57,7 @@ public class Home {
                     board.set(r*BOARD_LENGTH + col, tile);
                     r++;
                 }
-
+                shipAmt++;
                 return true;
             }
         } else if (shipOrientation.equals('E')) {
@@ -76,7 +77,8 @@ public class Home {
                     board.set(row*BOARD_LENGTH + c, tile);
                     c++;
                 }
-
+                
+                shipAmt++;
                 return true;
             }
         } else if (shipOrientation.equals('W')) {
@@ -96,7 +98,8 @@ public class Home {
                     board.set(row*BOARD_LENGTH + c, tile);
                     c++;
                 }
-
+                
+                shipAmt++;
                 return true;
             }
         }
