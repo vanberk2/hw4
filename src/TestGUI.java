@@ -231,7 +231,8 @@ public class TestGUI extends JFrame {
         // Game status information:
         //
         status = new JLabel();
-
+        gameState = "Initiate server or connect to server";
+        redrawStatus();
         //
         // Add all panels to the GUI:
         //
@@ -296,12 +297,6 @@ public class TestGUI extends JFrame {
         //
         shipSelection.repaint();
         shipSelection.validate();
-
-        //
-        // Redraw game status information:
-        //
-        gameState = "Initiate server or connect to server";
-        redrawStatus();
     }
 
     public void redrawStatus () {
