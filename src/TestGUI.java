@@ -364,7 +364,8 @@ public class TestGUI extends JFrame {
             }
         }
 
-        System.out.println("You've won!");
+        gameState = "Game Over";
+        redrawStatus();
     }
 
     private class waitForClientThread implements Runnable {
