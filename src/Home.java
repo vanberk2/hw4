@@ -132,6 +132,9 @@ public class Home {
         return false;
     }
 
+    
+    public int getShipAmt () { return this.shipAmt; }
+    
     //
     // Check if all of our ships are sunk.
     //
