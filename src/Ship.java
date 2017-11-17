@@ -1,3 +1,10 @@
+//
+// Author(s): Nathan Seitz
+//
+
+//
+// This class is extended by the all of the ship types in our game.
+//
 import java.util.ArrayList;
 import java.util.List;
 

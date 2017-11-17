@@ -1,3 +1,10 @@
+//
+// Author(s): Nathan Seitz
+//
+
+//
+// A Destroyer is a ship type of size 3.
+//
 public class Destroyer extends Ship {
     public Destroyer(Character orientation) {
         this.size = 3;

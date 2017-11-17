@@ -1,3 +1,10 @@
+//
+// Author(s): Nathan Seitz
+//
+
+//
+// An Aircraft Carrier is a ship type of size 5.
+//
 public class AircraftCarrier extends Ship {
     public AircraftCarrier(Character orientation) {
         this.size = 5;

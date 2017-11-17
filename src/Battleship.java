@@ -1,3 +1,10 @@
+//
+// Author(s): Nathan Seitz
+//
+
+//
+// A battleship is a ship type of size 4.
+//
 public class Battleship extends Ship {
     public Battleship(Character orientation) {
         this.size = 4;

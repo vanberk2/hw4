@@ -1,7 +1,16 @@
+//
+// Author(s): Nathan Seitz
+//
+//
+//
+
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+//
+// A class storing all menu bar contents.
+//
 public class MenuBar extends JMenuBar {
     Away away;
 

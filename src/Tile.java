@@ -1,3 +1,11 @@
+//
+// Author(s): Nathan Seitz
+//
+
+//
+// A Tile refers to one cell in either the home or away boards. It has an image associated with it, which is stored as
+//   the filename of the image.
+//
 public class Tile {
     private String image;
     private Boolean ship;
@@ -21,14 +29,9 @@ public class Tile {
         return hit;
     }
 
-    public void setImage(String image) {
-        this.image = image;
-    }
-
-    public void setIsShip(Boolean ship) {
-        ship = ship;
-    }
-
+    //
+    // If a ship is hit, change its image to the corresponding damaged ship segment image.
+    //
     public void setHit(Boolean hit) {
         if (hit) {
             if (this.image.equals("batt1.gif")) {

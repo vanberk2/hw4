@@ -1,3 +1,7 @@
+//
+// Author(s): Adam vanBerkum, Nathan Seitz
+//
+
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
@@ -12,6 +16,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.net.*;
 
+//
+// Contains the UI and game flow logic.
+//
 public class TestGUI extends JFrame {
     private List<JButton> homeGrid = new ArrayList<>();
     private List<JButton> awayGrid = new ArrayList<>();

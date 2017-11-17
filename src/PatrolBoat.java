@@ -1,3 +1,10 @@
+//
+// Author(s): Nathan Seitz
+//
+
+//
+// A Patrol Boat is a ship type of size 2.
+//
 public class PatrolBoat extends Ship {
     public PatrolBoat(Character orientation) {
         this.size = 2;

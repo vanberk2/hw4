@@ -1,3 +1,10 @@
+//
+// Author(s): Nathan Seitz
+//
+
+//
+// A Submarine is a ship type of size 3.
+//
 public class Submarine extends Ship {
     public Submarine(Character orientation) {
         this.size = 3;

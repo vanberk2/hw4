@@ -1,6 +1,17 @@
+//
+// Author(s): Adam vanBerkum, Nathan Seitz
+//
+//
+//
+
 import java.util.ArrayList;
 import java.util.List;
 
+//
+// The Home class holds the logical representation of the board containing the player's ships. This class manages
+//   details relating to placing ships, checking if an opponent struck one of our ships, as well as the images that
+//   make up the board in the UI.
+//
 public class Home {
     public final static int BOARD_LENGTH = 10;
     public final static int BOARD_SIZE = BOARD_LENGTH * BOARD_LENGTH;
@@ -24,6 +35,10 @@ public class Home {
         this.shipAmt = 0;
     }
 
+    //
+    // Places the ship at the (row, col) given if the ship won't run off of the board or overlap with other ships.
+    //   Returns true if successful, false otherwise.
+    //
     public boolean addShip(Ship ship, int row, int col) {
         int shipSize = ship.getSize();
         Character shipOrientation = ship.getOrientation();
