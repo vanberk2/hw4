@@ -307,11 +307,12 @@ public class TestGUI extends JFrame {
         status.validate();
     }
 
-    public void gameOperations (ObjectInputStream in, ObjectOutputStream out) {
+   public void gameOperations (ObjectInputStream in, ObjectOutputStream out) {
         int index;
         boolean hitOrMiss;
         System.out.println("In operations");
 
+        // Play until we hit 17 times or our opponent hits 17 times
         while (firedHits < 17 && theirHits < 17) {
             if (home.getShipAmt() != 5) {
                 gameState = "Waiting for your ship placement";
@@ -320,21 +321,21 @@ public class TestGUI extends JFrame {
                     Thread.yield();
                 }
             }
-
             if (myturn) {
                 try {
                     gameState = "Waiting for your shot";
                     redrawStatus();
                     while (myturn) {
-                        Thread.yield();
+                        Thread.yield(); // wait until a shot is fired
                     }
-                    out.writeInt(fireIndex);
+                    out.writeInt(fireIndex); // send index of button were shooting at to opponent
                     out.flush();
                     System.out.println("Sending index: " + fireIndex);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-
+                
+                // after firing shot see if we hit or miss from opponent
                 try {
                     hitOrMiss = in.readBoolean();
                     if (hitOrMiss == true) {System.out.println("Hit");away.setHit(fireIndex); firedHits++;}
@@ -347,9 +348,9 @@ public class TestGUI extends JFrame {
                 try {
                     gameState = "Waiting for opponent's shot";
                     redrawStatus();
-                    index = in.readInt();
+                    index = in.readInt(); // read in index of opponents shot
                     System.out.println("Got index: " + index);
-                    hitOrMiss = home.checkForHit(index);
+                    hitOrMiss = home.checkForHit(index); // check to see if there is a ship at index
                     if (hitOrMiss) theirHits++;
                     redraw();
                     out.writeBoolean(hitOrMiss);
@@ -389,6 +390,7 @@ public class TestGUI extends JFrame {
                     out = new ObjectOutputStream(clientSocket.getOutputStream());
                     in = new ObjectInputStream(clientSocket.getInputStream());
 
+                    myturn = false; // server does not go first
                     gameInProgress = true;
                     System.out.println("Got client input/output stream");
                     gameOperations(in, out);
@@ -411,7 +413,7 @@ public class TestGUI extends JFrame {
 
                         out = new ObjectOutputStream(clientSocket.getOutputStream());
                         in = new ObjectInputStream(clientSocket.getInputStream());
-                        myturn = false;
+                        myturn = false; // server does not go first
                         gameOperations(in, out);
                     } catch (UnknownHostException e) {
                         e.printStackTrace();
@@ -455,7 +457,7 @@ public class TestGUI extends JFrame {
                     in = new ObjectInputStream(clientSocket.getInputStream());
                     System.out.println("Got client input/out stream");
                     gameInProgress = true;
-                    myturn = true;
+                    myturn = true; // client goes first
                     gameOperations(in, out);
                 } catch (IOException e) {
                     System.out.println("Couldn't get I/O");
@@ -470,7 +472,7 @@ public class TestGUI extends JFrame {
 
                         out = new ObjectOutputStream(clientSocket.getOutputStream());
                         in = new ObjectInputStream(clientSocket.getInputStream());
-                        myturn = true;
+                        myturn = true; // client goes first
                         gameOperations(in, out);
                     } catch (UnknownHostException e) {
                         e.printStackTrace();
