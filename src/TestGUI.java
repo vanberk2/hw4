@@ -20,7 +20,6 @@ public class TestGUI extends JFrame {
     private int theirHits = 0;
     private boolean myturn = false;
     private boolean gameInProgress = false;
-    private boolean continuePlaying = false;
 
     private String ip = "127.0.0.1";
     private String port = "1037";
