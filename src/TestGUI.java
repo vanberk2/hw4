@@ -19,8 +19,10 @@ public class TestGUI extends JFrame {
     private int opponentshipAmt = 1;
     private int fireIndex;
     private int firedHits = 0;
+    private int theirHits = 0;
     private boolean myturn = false;
     private boolean gameInProgress = false;
+    private boolean continuePlaying = false;
 
     private String ip = "127.0.0.1";
     private String port = "1037";
@@ -35,7 +37,7 @@ public class TestGUI extends JFrame {
 
     private Home home;
     private Away away;
-    
+
     private Thread serverThread;
     private Thread clientThread;
 
@@ -313,7 +315,7 @@ public class TestGUI extends JFrame {
         boolean hitOrMiss;
         System.out.println("In operations");
 
-        while (firedHits < 17) {
+        while (firedHits < 17 && theirHits < 17) {
             if (home.getShipAmt() != 5) {
                 gameState = "Waiting for your ship placement";
                 redrawStatus();
@@ -351,6 +353,7 @@ public class TestGUI extends JFrame {
                     index = in.readInt();
                     System.out.println("Got index: " + index);
                     hitOrMiss = home.checkForHit(index);
+                    if (hitOrMiss) theirHits++;
                     redraw();
                     out.writeBoolean(hitOrMiss);
                     out.flush();
@@ -395,6 +398,29 @@ public class TestGUI extends JFrame {
                     System.out.println("Couldn't get I/O");
                     e.printStackTrace();
                 }
+
+                int result = JOptionPane.showConfirmDialog(null, "Would you like to continue playing?", "Continue?", JOptionPane.YES_NO_OPTION);
+                if (result == JOptionPane.YES_OPTION)
+                {
+                    resetGame();
+                    try {
+                        gameState = "Waiting for client";
+                        redrawStatus();
+
+                        System.out.println("Waiting for client");
+                        Socket clientSocket = server.accept();
+                        System.out.println("Client accepted");
+
+                        out = new ObjectOutputStream(clientSocket.getOutputStream());
+                        in = new ObjectInputStream(clientSocket.getInputStream());
+                        myturn = false;
+                        gameOperations(in, out);
+                    } catch (UnknownHostException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         }
     }
@@ -437,6 +463,23 @@ public class TestGUI extends JFrame {
                     System.out.println("Couldn't get I/O");
                     e.printStackTrace();
                 }
+                int result = JOptionPane.showConfirmDialog(null, "Would you like to continue playing?", "Continue?", JOptionPane.YES_NO_OPTION);
+                if (result == JOptionPane.YES_OPTION)
+                {
+                    resetGame();
+                    try {
+                        Socket clientSocket = new Socket(serverip, Integer.parseInt(clientport));
+
+                        out = new ObjectOutputStream(clientSocket.getOutputStream());
+                        in = new ObjectInputStream(clientSocket.getInputStream());
+                        myturn = true;
+                        gameOperations(in, out);
+                    } catch (UnknownHostException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         }
     }
@@ -455,6 +498,7 @@ public class TestGUI extends JFrame {
         home.reset();
         away.reset();
 
+        theirHits = 0;
         firedHits = 0;
         gameState = "";
 
