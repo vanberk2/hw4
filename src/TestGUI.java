@@ -15,8 +15,6 @@ import java.net.*;
 public class TestGUI extends JFrame {
     private List<JButton> homeGrid = new ArrayList<>();
     private List<JButton> awayGrid = new ArrayList<>();
-    private int myshipAmt = 1;
-    private int opponentshipAmt = 1;
     private int fireIndex;
     private int firedHits = 0;
     private int theirHits = 0;
