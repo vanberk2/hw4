@@ -280,7 +280,7 @@ public class TestGUI extends JFrame {
         //
         List<String> homeImages = home.getBoard();
         for (int i = 0; i < Home.BOARD_SIZE; i++) {
-            Icon icon = new ImageIcon(""images" + File.separator + homeImages.get(i));
+            Icon icon = new ImageIcon("images" + File.separator + homeImages.get(i));
             homeGrid.get(i).setIcon(icon);
         }
         homeGridGUI.repaint();
