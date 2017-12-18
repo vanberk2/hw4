@@ -15,6 +15,7 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.net.*;
+import java.io.File;
 
 //
 // Contains the UI and game flow logic.
@@ -72,7 +73,7 @@ public class TestGUI extends JFrame {
         homeGridGUI.setLayout(new GridLayout(10, 10));
         List<String> homeImages = home.getBoard();
         for (int i = 0; i < Home.BOARD_SIZE; i++) {
-            Icon icon = new ImageIcon("images\\" + homeImages.get(i));
+            Icon icon = new ImageIcon("images" + File.separator + homeImages.get(i));
             JButton current = new JButton(icon);
 
             //
@@ -165,7 +166,7 @@ public class TestGUI extends JFrame {
         awayGridGUI.setLayout(new GridLayout(10, 10));
         List<String> awayImages = away.getBoard();
         for (int i = 0; i < Home.BOARD_SIZE; i++) {
-            Icon icon = new ImageIcon("images\\" + awayImages.get(i));
+            Icon icon = new ImageIcon("images" + File.separator + awayImages.get(i));
             JButton current = new JButton(icon);
             current.addMouseListener(new MouseListener() {
                 @Override
@@ -279,7 +280,7 @@ public class TestGUI extends JFrame {
         //
         List<String> homeImages = home.getBoard();
         for (int i = 0; i < Home.BOARD_SIZE; i++) {
-            Icon icon = new ImageIcon("images\\" + homeImages.get(i));
+            Icon icon = new ImageIcon(""images" + File.separator + homeImages.get(i));
             homeGrid.get(i).setIcon(icon);
         }
         homeGridGUI.repaint();
@@ -290,7 +291,7 @@ public class TestGUI extends JFrame {
         //
         List<String> awayImages = away.getBoard();
         for (int i = 0; i < Home.BOARD_SIZE; i++) {
-            Icon icon = new ImageIcon("images\\" + awayImages.get(i));
+            Icon icon = new ImageIcon("images" + File.separator + awayImages.get(i));
             awayGrid.get(i).setIcon(icon);
         }
         awayGridGUI.repaint();
